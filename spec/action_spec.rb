@@ -39,6 +39,13 @@ describe LightService::Action do
       expect(context.to_hash.keys).to eq [:number]
       expect(context.fetch(:number)).to eq(2)
     end
+
+    it 'calls the block' do
+      TestDoubles::AddsTwoActionWithFetch.call(context)
+
+      expect(context.to_hash.keys).to eq [:number]
+      expect(context.fetch(:number)).to eq(2)
+    end
   end
 
   context "when the action context skips all" do

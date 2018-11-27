@@ -31,6 +31,24 @@ module LightService
       end
 
       def executed
+        define_singleton_method :call do |context = {}|
+          action_context = create_action_context(context)
+          return action_context if action_context.stop_processing?
+
+          # Store the action within the context
+          action_context.current_action = self
+
+          Context::KeyVerifier.verify_keys(action_context, self) do
+            action_context.define_accessor_methods_for_keys(all_keys)
+
+            catch(:jump_when_failed) do
+              call_before_action(action_context)
+              yield(action_context)
+              call_after_action(action_context)
+            end
+          end
+        end
+
         define_singleton_method :execute do |context = {}|
           action_context = create_action_context(context)
           return action_context if action_context.stop_processing?
